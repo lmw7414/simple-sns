@@ -5,7 +5,9 @@ import com.fastcampus.simplesns.exception.SnsApplicationException;
 import com.fastcampus.simplesns.model.User;
 import com.fastcampus.simplesns.model.entity.UserEntity;
 import com.fastcampus.simplesns.repository.UserEntityRepository;
+import com.fastcampus.simplesns.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,12 @@ public class UserService {
 
     private final UserEntityRepository userEntityRepository;
     private final BCryptPasswordEncoder encoder;
+
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
 
     @Transactional
     public User join(String userName, String password) {
@@ -38,6 +46,7 @@ public class UserService {
             throw new SnsApplicationException(ErrorCode.INVALID_PASSWORD);
         }
         // 토큰 생성
-        return "";
+        String token = JwtTokenUtils.generateToken(userName, secretKey, expiredTimeMs);
+        return token;
     }
 }
