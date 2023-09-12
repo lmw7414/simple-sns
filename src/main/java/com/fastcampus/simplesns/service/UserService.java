@@ -6,6 +6,7 @@ import com.fastcampus.simplesns.model.User;
 import com.fastcampus.simplesns.model.entity.UserEntity;
 import com.fastcampus.simplesns.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserEntityRepository userEntityRepository;
+    private final BCryptPasswordEncoder encoder;
 
     @Transactional
     public User join(String userName, String password) {
@@ -23,7 +25,7 @@ public class UserService {
         });
 
         // 회원가입 진행  -> user를 등록
-        UserEntity userEntity = userEntityRepository.save(UserEntity.of(userName, password));
+        UserEntity userEntity = userEntityRepository.save(UserEntity.of(userName, encoder.encode(password)));
         return User.fromEntity(userEntity);
     }
 
