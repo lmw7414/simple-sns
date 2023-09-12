@@ -1,5 +1,6 @@
 package com.fastcampus.simplesns.service;
 
+import com.fastcampus.simplesns.exception.ErrorCode;
 import com.fastcampus.simplesns.exception.SnsApplicationException;
 import com.fastcampus.simplesns.fixture.UserEntityFixture;
 import com.fastcampus.simplesns.model.entity.UserEntity;
@@ -35,7 +36,7 @@ class UserServiceTest {
         // mocking
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.empty());
         when(encoder.encode(password)).thenReturn("encrypt_password");
-        when(userEntityRepository.save(any())).thenReturn(Optional.of(UserEntityFixture.get(userName, password)));
+        when(userEntityRepository.save(any())).thenReturn(UserEntityFixture.get(userName, password));
 
         Assertions.assertDoesNotThrow(() -> userService.join(userName, password));
     }
@@ -52,6 +53,7 @@ class UserServiceTest {
         when(userEntityRepository.save(any())).thenReturn(Optional.of(fixture));
 
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> userService.join(userName, password));
+        Assertions.assertEquals(ErrorCode.DUPLICATED_USER_NAME, e.getErrorCode());
     }
 
     @Test
@@ -62,6 +64,7 @@ class UserServiceTest {
 
         // mocking
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(fixture));
+        when(encoder.matches(password, fixture.getPassword())).thenReturn(true);
         Assertions.assertDoesNotThrow(() -> userService.login(userName, password));
     }
 
@@ -72,6 +75,7 @@ class UserServiceTest {
         // mocking
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.empty());
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> userService.login(userName, password));
+        Assertions.assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
     }
 
     @Test
@@ -84,6 +88,7 @@ class UserServiceTest {
         // mocking
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(fixture));
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> userService.login(userName, wrongPassword));
+        Assertions.assertEquals(ErrorCode.INVALID_PASSWORD, e.getErrorCode());
     }
 
 }
