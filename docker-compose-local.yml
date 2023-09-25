@@ -1,0 +1,12 @@
+services:
+  simple-sns-database:
+    container_name: simple-sns-database
+    build:
+      dockerfile: Dockerfile
+      context: ./database
+    image: lmw7414/simple-sns-database
+    environment:
+      - POSTGRES_DATABASE=simple_sns
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    ports:
+      - "5432:5432"

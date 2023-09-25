@@ -1,0 +1,27 @@
+services:
+  simple-sns-database:
+    container_name: simple-sns-database
+    build:
+      dockerfile: Dockerfile
+      context: ./database
+    image: lmw7414/simple-sns-database
+    environment:
+      - POSTGRES_DATABASE=simple_sns
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+    ports:
+      - "5432:5432"
+  simple-sns-app:
+    container_name: simple-sns-app
+    build: .
+    depends_on:
+      - simple-sns-database
+    image: lmw7414/simple-sns-app
+    environment:
+      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
+      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "80:8080"
+    restart: always # depends on은 실행 순서만 컨트롤 할뿐,
+    # 컨테이너 안의 서비스가 실행가능한 상태인지까지는 확인 하지 않기 때문에
+    # DB가 아직 실행가능한 상태가 아니여서 실패하는 경우 재시작 하도록 설정
