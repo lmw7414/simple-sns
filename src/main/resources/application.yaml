@@ -1,20 +1,18 @@
+spring:
+  datasource:
+      hikari:
+        maximum-pool-size: 4
+      url: jdbc:postgresql://localhost:5432/simple_sns?serverTimezone=Asia/Seoul
+      username: ${SPRING_DATASOURCE_USERNAME}
+      password: ${SPRING_DATASOURCE_PASSWORD}
+      driver-class-name: org.postgresql.Driver
+      platform: postgres
 spring.jpa:
   database: postgresql
-  hibernate.dialect: org.hibernate.dialect.PostgresSQLDialect
+  hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   hibernate.ddl-auto: update
   properties.hibernate.format_sql: true
   show-sql: true
-
-spring.datasource:
-spring:
-  datasource:
-    hikari:
-      maximum-pool-size: 4
-    url:
-    username:
-    password:
-    platform: postgres
-    driver-class-name: org.postgresql.Driver
 
 jwt:
   secret-key: fast_campus.sns-application-2022.secret_key
