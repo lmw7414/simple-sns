@@ -31,10 +31,11 @@ public class AuthenticationConfig extends WebSecurityConfigurerAdapter {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilterBefore(new JwtTokenFilter(key, userService), UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling() // Security 핸들링을 하다 Exception이 던져졌을 경우 특정 엔트리 포인트로 가도록 하자
+                .authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 ;
-                //TODO: Security 핸들링을 하다 Exception이 던져졌을 경우 특정 엔트리 포인트로 가도록 하자
-                //.exceptionHandling()
-                //.authenticationEntryPoint()
+
+
 
     }
 }
