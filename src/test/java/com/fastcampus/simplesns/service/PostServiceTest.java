@@ -2,6 +2,8 @@ package com.fastcampus.simplesns.service;
 
 import com.fastcampus.simplesns.exception.ErrorCode;
 import com.fastcampus.simplesns.exception.SnsApplicationException;
+import com.fastcampus.simplesns.fixture.PostEntityFixture;
+import com.fastcampus.simplesns.fixture.UserEntityFixture;
 import com.fastcampus.simplesns.model.entity.PostEntity;
 import com.fastcampus.simplesns.model.entity.UserEntity;
 import com.fastcampus.simplesns.repository.PostEntityRepository;
@@ -53,5 +55,58 @@ public class PostServiceTest {
 
         SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.create(title, body, userName));
         Assertions.assertEquals(ErrorCode.USER_NOT_FOUND, e.getErrorCode());
+    }
+
+    @Test
+    void 포스트수정이_성공한경우() {
+        Integer postId = 1;
+        String title = "title";
+        String body = "body";
+        String userName = "userName";
+
+        PostEntity postEntity = PostEntityFixture.get(postId, 1, userName);
+        UserEntity userEntity = postEntity.getUser();
+
+        // mocking
+        when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(userEntity));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
+        when(postEntityRepository.saveAndFlush(any())).thenReturn(postEntity);
+
+        Assertions.assertDoesNotThrow(() -> postService.modify(postId, title, body, userName));
+    }
+
+    @Test
+    void 포스트수정시_포스트가_존재하지_않는_경우() {
+        Integer postId = 1;
+        String title = "title";
+        String body = "body";
+        String userName = "userName";
+
+        PostEntity postEntity = PostEntityFixture.get(postId, 1, userName);
+        UserEntity userEntity = postEntity.getUser();
+
+        // mocking
+        when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(userEntity));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.empty());
+
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.modify(postId, title, body, userName));
+        Assertions.assertEquals(e.getErrorCode(), ErrorCode.POST_NOT_FOUND);
+    }
+
+    @Test
+    void 포스트수정시_권한이_없는_경우() {
+        Integer postId = 1;
+        String title = "title";
+        String body = "body";
+        String userName = "userName";
+
+        PostEntity postEntity = PostEntityFixture.get(postId, 1, userName);
+        UserEntity writer = UserEntityFixture.get(2, "userName1", "password");
+        // mocking
+        when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(writer));
+        when(postEntityRepository.findById(postId)).thenReturn(Optional.of(postEntity));
+
+        SnsApplicationException e = Assertions.assertThrows(SnsApplicationException.class, () -> postService.modify(postId, title, body, userName));
+        Assertions.assertEquals(e.getErrorCode(), ErrorCode.INVALID_PERMISSION);
     }
 }
