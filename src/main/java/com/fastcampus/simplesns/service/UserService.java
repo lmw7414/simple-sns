@@ -2,12 +2,16 @@ package com.fastcampus.simplesns.service;
 
 import com.fastcampus.simplesns.exception.ErrorCode;
 import com.fastcampus.simplesns.exception.SnsApplicationException;
+import com.fastcampus.simplesns.model.Alarm;
 import com.fastcampus.simplesns.model.User;
 import com.fastcampus.simplesns.model.entity.UserEntity;
+import com.fastcampus.simplesns.repository.AlarmEntityRepository;
 import com.fastcampus.simplesns.repository.UserEntityRepository;
 import com.fastcampus.simplesns.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserEntityRepository userEntityRepository;
+    private final AlarmEntityRepository alarmEntityRepository;
     private final BCryptPasswordEncoder encoder;
 
     @Value("${jwt.secret-key}")
@@ -30,7 +35,6 @@ public class UserService {
                 new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", userName)));
     }
 
-
     @Transactional
     public User join(String userName, String password) {
         // 회원가입하려는 userName으로 회원가입된 user가 있는지
@@ -43,7 +47,6 @@ public class UserService {
         return User.fromEntity(userEntity);
     }
 
-    //TODO: implement
     public String login(String userName, String password) {
         // 회원가입 여부 체크
         UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", userName)));
@@ -54,5 +57,10 @@ public class UserService {
         // 토큰 생성
         String token = JwtTokenUtils.generateToken(userName, secretKey, expiredTimeMs);
         return token;
+    }
+
+    public Page<Alarm> alarmList(String userName, Pageable pageable) {
+        UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("%s not founded", userName)));
+        return alarmEntityRepository.findAllByUser(userEntity, pageable).map(Alarm::fromEntity);
     }
 }
