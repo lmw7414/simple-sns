@@ -1,4 +1,4 @@
-package com.fastcampus.simplesns.model.entity;
+package com.fastcampus.simplesns.model;
 
 public enum UserRole {
     ADMIN,

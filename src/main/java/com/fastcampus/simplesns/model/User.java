@@ -1,7 +1,6 @@
 package com.fastcampus.simplesns.model;
 
 import com.fastcampus.simplesns.model.entity.UserEntity;
-import com.fastcampus.simplesns.model.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
