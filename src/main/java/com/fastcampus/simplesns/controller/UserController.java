@@ -6,8 +6,11 @@ import com.fastcampus.simplesns.controller.response.AlarmResponse;
 import com.fastcampus.simplesns.controller.response.Response;
 import com.fastcampus.simplesns.controller.response.UserJoinResponse;
 import com.fastcampus.simplesns.controller.response.UserLoginResponse;
+import com.fastcampus.simplesns.exception.ErrorCode;
+import com.fastcampus.simplesns.exception.SnsApplicationException;
 import com.fastcampus.simplesns.model.User;
 import com.fastcampus.simplesns.service.UserService;
+import com.fastcampus.simplesns.util.ClassUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +39,9 @@ public class UserController {
 
     @GetMapping("/alarm")
     public Response<Page<AlarmResponse>> alarm(Authentication authentication, Pageable pageable) {
-        return Response.success(userService.alarmList(authentication.getName(), pageable).map(AlarmResponse::fromAlarm));
+        User user = ClassUtils.getSafeCastInstance(authentication.getPrincipal(), User.class).orElseThrow(
+                () -> new SnsApplicationException(ErrorCode.INTERNAL_SERVER_ERROR,
+                        "Casing to User class failed"));
+        return Response.success(userService.alarmList(user.getId(), pageable).map(AlarmResponse::fromAlarm));
     }
 }
