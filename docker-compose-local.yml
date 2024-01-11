@@ -11,3 +11,11 @@ services:
       - POSTGRES_DB=${SPRING_DATABASE}
     ports:
       - "5432:5432"
+  simple-sns-redis:
+    container_name: simple-sns-redis
+    build:
+      dockerfile: Dockerfile
+      context: ./redis
+    image: lmw7414/simple-sns-redis
+    ports:
+      - "6379:6379"
