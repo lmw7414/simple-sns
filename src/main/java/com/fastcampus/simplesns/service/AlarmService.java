@@ -2,7 +2,13 @@ package com.fastcampus.simplesns.service;
 
 import com.fastcampus.simplesns.exception.ErrorCode;
 import com.fastcampus.simplesns.exception.SnsApplicationException;
+import com.fastcampus.simplesns.model.AlarmArgs;
+import com.fastcampus.simplesns.model.AlarmType;
+import com.fastcampus.simplesns.model.entity.AlarmEntity;
+import com.fastcampus.simplesns.model.entity.UserEntity;
+import com.fastcampus.simplesns.repository.AlarmEntityRepository;
 import com.fastcampus.simplesns.repository.EmitterRepository;
+import com.fastcampus.simplesns.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,15 +26,20 @@ public class AlarmService {
 
     private static final Long DEFAULT_TIMEOUT = 60L * 1000 * 60;
     private static final String ALARM_NAME = "alarm";
-
     private final EmitterRepository emitterRepository;
+    private final AlarmEntityRepository alarmEntityRepository;
+    private final UserEntityRepository userEntityRepository;
 
-    public void send(Integer alarmId, Integer userId) {
-        emitterRepository.get(userId).ifPresentOrElse(sseEmitter -> {
+    public void send(AlarmType type, AlarmArgs arg, Integer receiveUserId) {
+        UserEntity user = userEntityRepository.findById(receiveUserId).orElseThrow(() -> new SnsApplicationException(ErrorCode.USER_NOT_FOUND));
+        //alarm save
+        AlarmEntity alarmEntity = alarmEntityRepository.save(AlarmEntity.of(user, type, arg));
+
+        emitterRepository.get(receiveUserId).ifPresentOrElse(sseEmitter -> {
             try {
-                sseEmitter.send(SseEmitter.event().id(alarmId.toString()).name(ALARM_NAME).data("new alarm"));
+                sseEmitter.send(SseEmitter.event().id(alarmEntity.getId().toString()).name(ALARM_NAME).data("new alarm"));
             } catch (IOException e) {
-                emitterRepository.delete(userId);
+                emitterRepository.delete(receiveUserId);
                 throw new SnsApplicationException(ErrorCode.ALARM_CONNECT_ERROR);
             }
         }, () -> log.info("No emitter founded"));
