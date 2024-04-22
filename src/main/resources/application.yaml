@@ -6,15 +6,38 @@ spring:
       username: ${SPRING_DATASOURCE_USERNAME}
       password: ${SPRING_DATASOURCE_PASSWORD}
       driver-class-name: org.postgresql.Driver
-      platform: postgres
-spring.jpa:
-  database: postgresql
-  hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
-  hibernate.ddl-auto: update
-  properties.hibernate.format_sql: true
-  show-sql: true
+  redis:
+    url: redis://localhost:6379
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+  kafka:
+    consumer:
+      properties:
+        spring.json.trusted.packages: "*"
+      bootstrap-servers: localhost:9092, localhost:9093, localhost:9094
+      group-id: alarm
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.IntegerDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    listener:
+      ack-mode: MANUAL
+    producer:
+      properties:
+        enable.idempotence: false
+      bootstrap-servers: localhost:9092, localhost:9093, localhost:9094
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+    topic:
+      alarm: topic-alarm
 
 jwt:
   secret-key: fast_campus.sns-application-2022.secret_key
   #30 days
   token.expired-time-ms: 2592000000
+
